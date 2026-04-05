@@ -1,0 +1,30 @@
+app:
+  name: Fraud Detection Platform
+  version: 1.0
+
+server:
+  host: 0.0.0.0
+  port: 8000
+
+database:
+  type: sqlite
+  name: fraud.db
+  path: database/fraud.db
+
+ml_models:
+  logistic_model: models/logistic_model.pkl
+  random_forest_model: models/random_forest.pkl
+  xgboost_model: models/xgboost_model.pkl
+  isolation_forest_model: models/isolation_forest.pkl
+
+fraud_detection:
+  risk_threshold: 70
+  high_amount_limit: 25000
+
+streaming:
+  kafka_topic: transactions
+  kafka_server: localhost:9092
+
+monitoring:
+  enable_logging: true
+  metrics_enabled: true

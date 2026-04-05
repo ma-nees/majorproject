@@ -1,0 +1,42 @@
+# Data files
+data/raw/*.csv
+data/processed/*.csv
+data/synthetic/*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.venv/
+
+# Dependencies
+node_modules/
+.npm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env
+.env.local
+environment_variables.env
+
+# Logs
+*.log
+logs/
+
+# Models
+*.pkl
+*.joblib
+*.h5
+*.pth
+*.pt
+
+# OS
+.DS_Store
+Thumbs.db
+fraud-detection-platform\services\transaction_service\__pycache__\fraud_detection_service.cpython-312.pyc
