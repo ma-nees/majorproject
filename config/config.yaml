@@ -1,30 +1,37 @@
-app:
-  name: Fraud Detection Platform
-  version: 1.0
+# Fraud Detection Platform Configuration
 
-server:
+app:
+  name: FraudShield
+  version: 1.0.0
+  debug: true
   host: 0.0.0.0
   port: 8000
 
 database:
-  type: sqlite
-  name: fraud.db
-  path: database/fraud.db
+  url: "sqlite:///./fraudshield.db"  # or postgresql://user:pass@localhost/fraudshield
+  echo: false
 
-ml_models:
-  logistic_model: models/logistic_model.pkl
-  random_forest_model: models/random_forest.pkl
-  xgboost_model: models/xgboost_model.pkl
-  isolation_forest_model: models/isolation_forest.pkl
+ml:
+  model_path: "./models"
+  feature_columns:
+    - amount
+    - transaction_type
+    - location_distance
+    - time_of_day
+    - device_fingerprint
+    - previous_fraud_count
+    - velocity_1h
+    - velocity_24h
+  target: is_fraud
 
-fraud_detection:
-  risk_threshold: 70
-  high_amount_limit: 25000
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topic: "transactions"
 
-streaming:
-  kafka_topic: transactions
-  kafka_server: localhost:9092
+redis:
+  url: "redis://localhost:6379/0"
 
-monitoring:
-  enable_logging: true
-  metrics_enabled: true
+auth:
+  secret_key: "your-secret-key-change-in-production"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30

@@ -1,2 +1,42 @@
-numpy
-scikit-learn
+# Core
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9  # or sqlite for development
+
+# ML & Data
+pandas==2.1.3
+numpy==1.26.2
+scikit-learn==1.3.2
+xgboost==2.0.3
+joblib==1.3.2
+
+# Anomaly Detection & Explainability
+shap==0.43.0
+lime==0.2.0.1
+
+# Streaming
+kafka-python==2.0.2
+
+# Monitoring & Logging
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Utilities
+celery==5.3.4
+redis==5.0.1
+
+
+pyyaml==6.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
