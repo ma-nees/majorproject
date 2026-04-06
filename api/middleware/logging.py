@@ -5,7 +5,17 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Dict, Any
 import json
 from datetime import datetime
+from monitoring.logging_config import get_logger
 
+
+logger = get_logger("api")
+
+async def http_logging_middleware(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration = time.time() - start
+    logger.info(f"{request.method} {request.url.path} - {response.status_code} - {duration:.3f}s")
+    return response
 # Configure structured logger
 logger = logging.getLogger("fraudshield_api")
 logger.setLevel(logging.INFO)

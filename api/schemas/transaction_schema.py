@@ -3,6 +3,48 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
+# api/schemas/transaction_schema.py
+from pydantic import BaseModel, Field, validator
+from datetime import datetime
+from typing import Optional
+
+class TransactionEvaluateRequest(BaseModel):
+    """Request body for single transaction evaluation."""
+    transaction_id: Optional[str] = None
+    user_id: str
+    amount: float = Field(..., gt=0, le=1_000_000)
+    timestamp: datetime
+    location: Optional[str] = None
+    country_code: Optional[str] = None
+    device_id: Optional[str] = None
+    # Add any other fields your model expects
+
+    @validator('timestamp', pre=True)
+    def parse_timestamp(cls, v):
+        if isinstance(v, str):
+            return datetime.fromisoformat(v)
+        return v
+
+class TransactionResponse(BaseModel):
+    """Response schema for stored transaction."""
+    transaction_id: str
+    user_id: str
+    amount: float
+    timestamp: datetime
+    location: Optional[str] = None
+    device_id: Optional[str] = None
+    risk_score: Optional[float] = None
+    fraud_probability: Optional[float] = None
+    status: Optional[str] = None          # APPROVE, REVIEW, BLOCK, REJECTED
+    risk_level: Optional[str] = None      # LOW, MEDIUM, HIGH, CRITICAL
+    final_action: Optional[str] = None
+    processed_at: datetime
+    created_at: datetime
+    is_fraud_actual: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+        
 class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"

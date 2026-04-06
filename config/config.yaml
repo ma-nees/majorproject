@@ -35,3 +35,29 @@ auth:
   secret_key: "your-secret-key-change-in-production"
   algorithm: "HS256"
   access_token_expire_minutes: 30
+
+alert_service:
+  storage_dir: "monitoring/data/alerts"
+  high_risk_threshold: 85
+  critical_risk_threshold: 95
+  velocity_alert_window_minutes: 5
+  max_alerts_per_window: 10
+  email:
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    username: "your-alerts@gmail.com"
+    password: "app-password"
+    from_addr: "fraud-alerts@yourdomain.com"
+    to_addrs: ["admin@yourdomain.com", "security@yourdomain.com"]
+  slack:
+    webhook_url: "https://hooks.slack.com/services/T000/B000/XXX"
+  webhook:
+    url: "https://your-monitoring-system.com/alerts"
+models:
+  xgboost: "models/xgboost.pkl"
+  isolation_forest: "models/isolation_forest.pkl"
+
+risk_evaluation:
+  default_ml_prob: 0.5
+  default_anomaly_score: 50.0
+  fallback_action: "REVIEW"

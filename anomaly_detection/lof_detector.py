@@ -1,67 +1,72 @@
-"""
-Local Outlier Factor based anomaly detection
-Detects transactions that are different from nearby data points
-"""
-
+# anomaly_detection/lof_detector.py
+import joblib
 import numpy as np
+import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor
-
+from typing import Union, Optional
 
 class LOFDetector:
-
-    def __init__(self, neighbors=20):
-
+    """
+    Local Outlier Factor detector. Can be fitted on reference data,
+    then used to predict on new points (though LOF is transductive).
+    We'll use the novelty=True mode to support predict().
+    """
+    
+    def __init__(self, n_neighbors: int = 20, contamination: float = 0.1):
+        self.n_neighbors = n_neighbors
+        self.contamination = contamination
+        self.model = None
+    
+    def fit(self, X: Union[np.ndarray, pd.DataFrame]):
+        """Fit LOF model on reference data."""
         self.model = LocalOutlierFactor(
-            n_neighbors=neighbors,
-            contamination=0.02,
-            novelty=True
+            n_neighbors=self.n_neighbors,
+            contamination=self.contamination,
+            novelty=True   # enables predict on new data
         )
-
-    def train(self, data):
+        self.model.fit(X)
+        return self
+    
+    def predict_anomaly(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """Return 1 for anomaly (fraud), 0 for normal."""
+        if self.model is None:
+            raise ValueError("Model not fitted. Call fit() first.")
+        preds = self.model.predict(X)
+        return (preds == -1).astype(int)
+    
+    def anomaly_score(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """
-        Train LOF model
+        Returns negative LOF values (more negative = more anomalous).
         """
-
-        self.model.fit(data)
-
-    def predict(self, transaction_features):
-        """
-        Predict anomaly
-        """
-
-        prediction = self.model.predict([transaction_features])[0]
-
-        if prediction == -1:
-            return "ANOMALY"
-
-        return "NORMAL"
-
-    def anomaly_score(self, transaction_features):
-        """
-        Return anomaly score
-        """
-
-        score = self.model.decision_function([transaction_features])[0]
-
-        return float(score)
+        if self.model is None:
+            raise ValueError("Model not fitted.")
+        # LOF decision_function returns opposite sign: more negative = more outlier
+        return self.model.decision_function(X)
+    
+    def normalized_anomaly_score(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """Convert to [0,1] probability-like score."""
+        scores = self.anomaly_score(X)
+        # Normalize using sigmoid (values typically between -1 and 1)
+        normalized = 1 / (1 + np.exp(-scores * 2))
+        return normalized
+    
+    def save(self, path: str):
+        joblib.dump(self.model, path)
+    
+    @classmethod
+    def load(cls, path: str, n_neighbors: int = 20, contamination: float = 0.1):
+        """Load a pre-fitted LOF model."""
+        detector = cls(n_neighbors=n_neighbors, contamination=contamination)
+        detector.model = joblib.load(path)
+        return detector
 
 
-# Example usage
-if __name__ == "__main__":
-
-    X = np.array([
-        [50],
-        [60],
-        [55],
-        [52],
-        [58],
-        [70000]  # suspicious
-    ])
-
-    detector = LOFDetector()
-
-    detector.train(X)
-
-    result = detector.predict([70000])
-
-    print("LOF Prediction:", result)
+def quick_lof_score(reference_data: np.ndarray, new_point: np.ndarray, n_neighbors: int = 20) -> float:
+    """
+    Quick LOF score for a single new point against reference data.
+    Returns normalized anomaly score (0-1).
+    """
+    detector = LOFDetector(n_neighbors=n_neighbors)
+    detector.fit(reference_data)
+    score = detector.normalized_anomaly_score(new_point.reshape(1, -1))
+    return float(score[0])

@@ -2,7 +2,32 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum, 
 from sqlalchemy.sql import func
 from database.db_connection import Base
 import enum
+from sqlalchemy import Column, String, Float, DateTime, Boolean, Integer
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
+
+Base = declarative_base()
+
+class Transaction(Base):
+    __tablename__ = 'transactions'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    transaction_id = Column(String, unique=True, index=True)
+    user_id = Column(String, index=True)
+    amount = Column(Float)
+    timestamp = Column(DateTime)
+    location = Column(String, nullable=True)
+    device_id = Column(String, nullable=True)
+    risk_score = Column(Float, nullable=True)
+    fraud_probability = Column(Float, nullable=True)
+    status = Column(String)          # APPROVE, REVIEW, BLOCK, REJECTED
+    risk_level = Column(String)      # LOW, MEDIUM, HIGH, CRITICAL
+    final_action = Column(String)
+    processed_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_fraud_actual = Column(Boolean, nullable=True)
+
+    
 class TransactionStatus(str, enum.Enum):
     PENDING = "pending"
     APPROVED = "approved"

@@ -3,6 +3,9 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 import uuid
 
+from fastapi import APIRouter, HTTPException
+from services.risk_service.risk_evaluation_service import get_risk_service
+
 from database.db_connection import get_db
 from database import models
 from api.schemas.transaction_schema import (
@@ -17,6 +20,25 @@ from services.alert_service.fraud_alerts import create_alert_if_needed
 
 router = APIRouter()
 
+router = APIRouter()
+
+@router.post("/predict")
+async def predict(transaction: dict):
+    """
+    Endpoint to evaluate a single transaction.
+    """
+    service = get_risk_service()
+    decision = await service.evaluate_transaction(transaction, trigger_alerts=True)
+    return decision
+
+@router.post("/predict/batch")
+async def predict_batch(transactions: list):
+    """
+    Batch evaluation endpoint.
+    """
+    service = get_risk_service()
+    decisions = await service.evaluate_batch(transactions, trigger_alerts=False)  # avoid spam
+    return decisions
 # Load ML model (cached)
 fraud_model = None
 

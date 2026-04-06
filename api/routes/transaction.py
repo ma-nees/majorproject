@@ -2,11 +2,44 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
 
+from services.transaction_service.fraud_detection_service import get_fraud_detection_service
 from database.db_connection import get_db
 from database import models
-from api.schemas.transaction_schema import TransactionResponse
+from api.schemas.transaction_schema import TransactionResponse, TransactionEvaluateRequest
 
 router = APIRouter()
+
+@router.post("/transaction/evaluate")
+async def evaluate_transaction(transaction: TransactionEvaluateRequest):
+    """
+    Submit a transaction for fraud detection.
+    Accepts a validated request body (Pydantic model).
+    """
+    service = get_fraud_detection_service()
+    # Convert Pydantic model to dict
+    result = await service.detect_fraud(transaction.dict(), store_result=True, trigger_alerts=True)
+    if result.get("status") == "REJECTED":
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+@router.post("/transaction/batch")
+async def batch_evaluate(transactions: List[TransactionEvaluateRequest]):
+    """
+    Submit multiple transactions.
+    """
+    service = get_fraud_detection_service()
+    tx_dicts = [tx.dict() for tx in transactions]
+    results = await service.process_batch(tx_dicts, store_result=False, trigger_alerts=False)
+    return results
+
+@router.post("/transaction/feedback")
+async def feedback(transaction_id: str, was_fraud: bool):
+    """
+    Update ground truth after manual review or chargeback.
+    """
+    service = get_fraud_detection_service()
+    await service.update_with_feedback(transaction_id, was_fraud)
+    return {"status": "ok"}
 
 @router.get("/transactions", response_model=List[TransactionResponse])
 def list_transactions(
